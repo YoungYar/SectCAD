@@ -15,14 +15,16 @@ polygon #1:  [(8.5, 1.5), (2.5, 1.5), (2.5, 2.0), (2.0, 2.0), (2.0, 3.0), (3.0, 
 </p>
 
 <p>
-Keys and button guidnace:<br>
-- Click on the figure to create a polygon.
-- Press 'esc' key or 'Start (or Clear) Selection' button to clear the current selection and start new selection.
-- Press 'Add Polygon (+)' button to save current the polygon selection.
-- Press 'Remove selected Area (-)' button to draw a red polygon and remove intersections with saved polygons.
-- Press 'Merge' button to merge overlapping saved (blue) polygons. This command reports the final shape vertices.
-- Try holding the 'shift' key to move all of the vertices.
-- Try holding the 'ctrl' key to move a single vertex.
+Keys and button guidnace:
+<ul>
+<li>Click on the figure to create a polygon.</li>
+<li>Press 'esc' key or 'Start (or Clear) Selection' button to clear the current selection and start new selection.</li>
+<li>Press 'Add Polygon (+)' button to save current the polygon selection.</li>
+<li>Press 'Remove selected Area (-)' button to draw a red polygon and remove intersections with saved polygons.</li>
+<li>Press 'Merge' button to merge overlapping saved (blue) polygons. This command reports the final shape vertices.</li>
+<li>Try holding the 'shift' key to move all of the vertices.</li>
+<li>Try holding the 'ctrl' key to move a single vertex.</li>
+</ul>
 </p>
 
 <p>
