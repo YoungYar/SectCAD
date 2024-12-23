@@ -26,6 +26,6 @@ Keys and button guidnace:<br>
 </p>
 
 <p>
-Matplotlib control buttons are also available:
+Matplotlib control buttons are also available:<br>
 <img src="https://github.com/YoungYar/SectCAD/blob/master/Matplotlib-control-buttons.png?raw=true" alt="Matplotlib control buttons"/>
 </p>
