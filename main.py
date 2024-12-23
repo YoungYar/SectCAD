@@ -61,7 +61,7 @@ class SnappingPolygonSelector(PolygonSelector):
         # Snap vertices to grid
         self.current_polygon = [self.snap_to_grid(x, y) for x, y in verts]
         print("Selected vertices:", self.current_polygon)
-        
+
     def update_grid_lines(self):
         """Update grid lines based on current view limits and spacing."""
         if self.grid_spacing_x <= 0 or self.grid_spacing_y <= 0:
@@ -87,7 +87,7 @@ class SnappingPolygonSelector(PolygonSelector):
     def save_polygon(self):
         """Save the current polygon and clear current vertices for new drawing."""
         if self.current_polygon:
-            self.saved_polygons.append(self.current_polygon.copy())  # Copy to avoid reference issues
+            self.saved_polygons.append((self.current_polygon.copy(), []))  # Copy to avoid reference issues
             print("Polygon saved:", self.current_polygon)
             self.current_polygon = []
             self.update_plot()
@@ -101,9 +101,13 @@ class SnappingPolygonSelector(PolygonSelector):
         ax.clear()
 
         # Redraw saved polygons
-        for polygon in self.saved_polygons:
-            poly = Polygon(polygon, closed=True, edgecolor='blue', facecolor='cyan', alpha=0.3)
-            ax.add_patch(poly)
+        for exterior, interiors in self.saved_polygons:
+            if len(exterior) > 2:  # Ensure there are enough points to form a polygon
+                poly = Polygon(exterior, closed=True, edgecolor='blue', facecolor='cyan', alpha=0.3)
+                ax.add_patch(poly)
+                for interior in interiors:
+                    hole = Polygon(interior, closed=True, edgecolor='blue', facecolor='white', alpha=1.0)
+                    ax.add_patch(hole)
 
         # Draw the red polygon if it exists
         if self.red_polygon:
@@ -142,8 +146,8 @@ class SnappingPolygonSelector(PolygonSelector):
             # Check if the red polygon is valid
             if not red_polygon.is_valid:
                 print("Error: The red polygon is not valid!")
-                ax.set_title('The selection is not valid! Please adjust the shape.', 
-                             bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.5), 
+                ax.set_title('The selection is not valid! Please adjust the shape.',
+                             bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.5),
                              loc='center', pad=15)
                 fig.canvas.draw_idle()
                 return
@@ -152,13 +156,13 @@ class SnappingPolygonSelector(PolygonSelector):
 
             for polygon in self.saved_polygons:
                 # Create a shapely Polygon for the saved polygon
-                saved_polygon = ShapelyPolygon(polygon)
+                saved_polygon = ShapelyPolygon(polygon[0], polygon[1])
 
                 # Check if the saved polygon is valid
                 if not saved_polygon.is_valid:
                     print("Error: A saved polygon is not valid!")
-                    ax.set_title('A saved polygon is not valid! Please fix it.', 
-                                 bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.5), 
+                    ax.set_title('A saved polygon is not valid! Please fix it.',
+                                 bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.5),
                                  loc='center', pad=15)
                     fig.canvas.draw_idle()
                     return
@@ -169,32 +173,32 @@ class SnappingPolygonSelector(PolygonSelector):
                         new_polygon = saved_polygon.difference(red_polygon)
                         if not new_polygon.is_empty:
                             if new_polygon.geom_type == 'Polygon':
-                                remaining_polygons.append(new_polygon)
+                                remaining_polygons.append((list(new_polygon.exterior.coords), [list(interior.coords) for interior in new_polygon.interiors]))
                             elif new_polygon.geom_type == 'MultiPolygon':
                                 for part in new_polygon.geoms:
-                                    remaining_polygons.append(part)
+                                    remaining_polygons.append((list(part.exterior.coords), [list(interior.coords) for interior in part.interiors]))
                     else:
-                        remaining_polygons.append(saved_polygon)
+                        remaining_polygons.append((list(saved_polygon.exterior.coords), [list(interior.coords) for interior in saved_polygon.interiors]))
 
                 except Exception as e:
                     print("Error:", e)
-                    ax.set_title('An error occurred while processing the polygons.', 
-                                 bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.5), 
+                    ax.set_title('An error occurred while processing the polygons.',
+                                 bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.5),
                                  loc='center', pad=15)
                     fig.canvas.draw_idle()
                     return
 
             # Update saved polygons list
-            self.saved_polygons = [list(poly.exterior.coords) for poly in remaining_polygons]
+            self.saved_polygons = remaining_polygons
 
             # Update plot with the modified polygons
             self.update_plot()
 
     def merge_polygons(self):
-        """Merge overlapping blue polygons."""
+        """Merge overlapping blue polygons while retaining holes."""
         if self.saved_polygons:
             # Convert all saved polygons to shapely objects
-            shapely_polygons = [ShapelyPolygon(polygon) for polygon in self.saved_polygons]
+            shapely_polygons = [ShapelyPolygon(polygon[0], polygon[1]) for polygon in self.saved_polygons]
 
             # Validate and fix any invalid geometries
             shapely_polygons = [make_valid(polygon) for polygon in shapely_polygons]
@@ -204,15 +208,17 @@ class SnappingPolygonSelector(PolygonSelector):
             # Update saved polygons with the merged result
             self.saved_polygons = []
             if merged_polygon.geom_type == 'Polygon':
-                self.saved_polygons.append(list(merged_polygon.exterior.coords))
+                self.saved_polygons.append((list(merged_polygon.exterior.coords), [list(interior.coords) for interior in merged_polygon.interiors]))
             elif merged_polygon.geom_type == 'MultiPolygon':
                 for poly in merged_polygon.geoms:
-                    self.saved_polygons.append(list(poly.exterior.coords))
+                    self.saved_polygons.append((list(poly.exterior.coords), [list(interior.coords) for interior in poly.interiors]))
 
             # Print the vertices of the final merged polygon(s)
             print("Final merged polygon(s) vertices:")
-            for count, polygon in enumerate(self.saved_polygons):
-                print(f'polygon #{count+1}: ', polygon)
+            for count, (exterior, interiors) in enumerate(self.saved_polygons):
+                print(f'polygon #{count+1}: ', exterior)
+                for interior in interiors:
+                    print(f'  hole: ', interior)
 
             self.update_plot()
 
