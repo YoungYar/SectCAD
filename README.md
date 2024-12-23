@@ -22,8 +22,8 @@ Keys and button guidnace:
 <li>Press the "Add Polygon (+)" button to save current the polygon selection.</li>
 <li>Press the "Remove selected Area (-)" button to remove the intersection of the drawn polygon areas and the saved polygons.</li>
 <li>Press the "Merge" button to merge overlapping saved (blue) polygons. This command reports the final shape vertices.</li>
-<li>Try holding the "shift" key to move all of the vertices.</li>
-<li>Try holding the "ctrl" key to move a single vertex.</li>
+<li>Holding down "shift" and the left mouse button moves all vertices of the selected polygon.</li>
+<li>Move a selected polygon vertex by holding down the left mouse button on that vertex (this can also be done by holding down the "Crtl" key).</li>
 </ul>
 </p>
 
